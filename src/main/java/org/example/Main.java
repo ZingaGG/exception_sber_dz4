@@ -14,7 +14,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         TerminalServer server = new TerminalServer();
 
-        System.out.println("Welcome to my Terminal!");
+        System.out.println("Welcome to the Terminal!");
         System.out.print("Enter a unique account ID: ");
         long accountId = scanner.nextLong();
 
@@ -34,13 +34,10 @@ public class Main {
 
             try {
                 switch (choice) {
-                    case 1 -> {
-                        terminal.enterPin();
-                        System.out.println("Authentication successful!");
-                    }
+                    case 1 -> terminal.enterPin();
                     case 2 -> {
                         long balance = terminal.checkBalance(accountId);
-                        System.out.println("Your current balance is: " + balance);
+                        System.out.println("Your current balance is: $" + balance);
                     }
                     case 3 -> {
                         System.out.print("Enter the amount to deposit: ");
@@ -55,7 +52,7 @@ public class Main {
                         System.out.println("Withdrawal successful!");
                     }
                     case 5 -> {
-                        System.out.println("Thank you for using my Terminal. Goodbye!");
+                        System.out.println("Thank you for using the Terminal. Goodbye!");
                         return;
                     }
                     default -> System.out.println("Invalid option. Please try again.");

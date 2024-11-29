@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.example.Exceptions.*;
 import org.example.Interface.Terminal;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 public class TerminalImpl implements Terminal {
@@ -12,6 +14,7 @@ public class TerminalImpl implements Terminal {
     private long balance = 0L;
     private int attempts = 0;
     private boolean isAuthenticated = false;
+    private Instant lockTime = null;
 
     private final TerminalServer server;
     private final PinValidator pinValidator;
@@ -51,20 +54,51 @@ public class TerminalImpl implements Terminal {
 
     @Override
     public void enterPin() throws AccountIsLockedException {
+        if (isAccountLocked()) {
+            throw new AccountIsLockedException("Account is locked. Time remaining: " + getLockTimeRemaining() + " seconds.");
+        }
+
+
+        int resultPin = PinValidator.pinReceiver();
         try {
-            int resultPin = PinValidator.pinReceiver();
             if (pinValidator.validatePIN(resultPin)) {
                 this.isAuthenticated = true;
                 this.attempts = 0;
-                System.out.println("Authentication successful.");
+                System.out.println("Authentication successful!");
             }
         } catch (InccorectPinException e) {
             this.attempts++;
             if (this.attempts >= 3) {
-                throw new AccountIsLockedException("Account is locked due to 3 incorrect PIN attempts.");
+                lockAccount();
+                throw new AccountIsLockedException("Account is locked due to 3 incorrect PIN attempts. Lock duration: 10 seconds.");
             }
             System.err.println("Wrong PIN, try again (" + (3 - attempts) + " attempts left).");
         }
+    }
+
+    private void lockAccount() {
+        this.lockTime = Instant.now().plusSeconds(10); //
+        this.isAuthenticated = false;
+        this.attempts = 0;
+    }
+
+    private boolean isAccountLocked() {
+        if (lockTime == null) {
+            return false;
+        }
+
+        if (Instant.now().isAfter(lockTime)) {
+            lockTime = null;
+            return false;
+        }
+        return true;
+    }
+
+    private long getLockTimeRemaining() {
+        if (lockTime == null) {
+            return 0;
+        }
+        return Math.max(0, lockTime.getEpochSecond() - Instant.now().getEpochSecond());
     }
 
     @Override
