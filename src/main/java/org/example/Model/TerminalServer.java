@@ -1,6 +1,7 @@
 package org.example.Model;
 
 import org.example.Exceptions.AccountNotFoundException;
+import org.example.Exceptions.InvalidAmountException;
 
 import java.util.HashMap;
 
@@ -21,14 +22,20 @@ public class TerminalServer {
         account.setBalance(balance + deposit);
     }
 
-    public void withdraw(Long withdrawAmount, long id) throws AccountNotFoundException {
+    public void withdraw(Long withdrawAmount, long id) throws AccountNotFoundException, InvalidAmountException {
         TerminalImpl account = accountBase.getOrDefault(id, null);
-        if(account == null){
-            throw new AccountNotFoundException("Account does not exists");
+        if (account == null) {
+            throw new AccountNotFoundException("Account does not exist.");
         }
+
         long balance = account.getBalance();
+        if (balance < withdrawAmount) {
+            throw new InvalidAmountException("Insufficient funds for withdrawal.");
+        }
+
         account.setBalance(balance - withdrawAmount);
     }
+
 
     public long getBalance(long id) throws AccountNotFoundException {
         TerminalImpl account = accountBase.getOrDefault(id, null);
